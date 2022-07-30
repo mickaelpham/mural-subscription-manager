@@ -61,7 +61,7 @@ const retrieveBillingPeriod = (price: string): BillingPeriod => {
     case TEAM_PLUS_ANNUAL_PRICE:
       return BillingPeriod.ANNUAL;
     case BUSINESS_ANNUAL_PRICE:
-      return BillingPeriod.MONTHLY;
+      return BillingPeriod.ANNUAL;
     default:
       throw new Error("unknown billing period from Stripe price");
   }
