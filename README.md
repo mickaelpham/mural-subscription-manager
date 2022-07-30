@@ -21,9 +21,10 @@ cp .env.sample .env
 nano .env
 ```
 
-Start the application
+Migrate the database and start the application
 
 ```sh
+npx prisma migrate dev
 npm start
 ```
 
