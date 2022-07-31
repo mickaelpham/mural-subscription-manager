@@ -10,7 +10,7 @@ const DAYS_UNTIL_DUE = 14; // days
 
 const createSubscription = async (
   customer: string,
-  subscription: EditSubsCriptionParams
+  subscription: EditSubscriptionParams
 ): Promise<Subscription> => {
   const stripeSubscription = await stripe.subscriptions.create({
     customer,
@@ -29,7 +29,7 @@ const createSubscription = async (
 
 const updateSubscription = async (
   stripeSubscription: Stripe.Subscription,
-  subscription: EditSubsCriptionParams
+  subscription: EditSubscriptionParams
 ): Promise<Subscription> => {
   const itemId = stripeSubscription.items.data[0].id;
 
@@ -50,14 +50,14 @@ const updateSubscription = async (
   return buildSubscriptionFromStripe(updatedStripeSubscription);
 };
 
-export type EditSubsCriptionParams = Pick<
+export type EditSubscriptionParams = Pick<
   Subscription,
   "memberships" | "billingPeriod" | "plan"
 >;
 
 const editSubscription = async (
   workspace: Workspace,
-  subscription: EditSubsCriptionParams
+  subscription: EditSubscriptionParams
 ): Promise<Subscription> => {
   const { externalId } = workspace;
 
