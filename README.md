@@ -69,3 +69,16 @@ curl --request POST \
 	"billingPeriod": "annual"
 }'
 ```
+
+## Webhooks
+
+Use [these instructions](https://stripe.com/docs/stripe-cli/about-events) to
+listen to incoming Stripe events in dev.
+
+```sh
+# Make sure you are logged in
+stripe login
+
+# Start forwarding events
+stripe listen --forward-to localhost:8080/webhooks/stripe
+```
