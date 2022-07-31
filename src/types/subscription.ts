@@ -1,23 +1,6 @@
+import { BillingPeriod, Subscription, SubscriptionPlan } from "@prisma/client";
 import Stripe from "stripe";
 import { stripeTimeToDate } from "../stripe";
-
-enum SubscriptionPlan {
-  TEAM_PLUS = "team+",
-  BUSINESS = "business",
-}
-
-enum BillingPeriod {
-  MONTHLY = "monthly",
-  ANNUAL = "annual",
-}
-
-interface Subscription {
-  plan: SubscriptionPlan;
-  memberships: number;
-  billingPeriod: BillingPeriod;
-  nextInvoice: Date;
-  cancelAtPeriodEnd: boolean;
-}
 
 const TEAM_PLUS_MONTHLY_PRICE = "price_1LRK1xA6xZrKb1gYIe5uQU0S";
 const TEAM_PLUS_ANNUAL_PRICE = "price_1LRK1xA6xZrKb1gYfcmArOaR";
@@ -69,12 +52,13 @@ const retrieveBillingPeriod = (price: string): BillingPeriod => {
 
 export const buildSubscriptionFromStripe = (
   stripeSubscription: Stripe.Subscription
-): Subscription => {
+): Partial<Subscription> => {
   const item = stripeSubscription.items.data[0];
   if (!item.quantity)
     throw new Error("subscription item does not have a quantity");
 
   return {
+    externalId: stripeSubscription.id,
     plan: retrieveSubscriptionPlan(item.price.id),
     memberships: item.quantity,
     billingPeriod: retrieveBillingPeriod(item.price.id),

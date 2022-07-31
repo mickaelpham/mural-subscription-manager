@@ -1,4 +1,4 @@
-import { Workspace } from "@prisma/client";
+import { SubscriptionPlan, Workspace } from "@prisma/client";
 import database from "../database";
 import stripe, { dateToStripeTime } from "../stripe";
 
@@ -24,9 +24,18 @@ const createWorkspace = async (
     test_clock: testClock.id,
   });
 
-  // persist the workspace in the database
+  // persist the workspace in the database with a freemium subscription
   const workspace = await database.workspace.create({
-    data: { name, billingEmail: email, externalId: customer.id },
+    data: {
+      name,
+      billingEmail: email,
+      externalId: customer.id,
+      subscription: {
+        create: {
+          plan: SubscriptionPlan.FREEMIUM,
+        },
+      },
+    },
   });
 
   return workspace;

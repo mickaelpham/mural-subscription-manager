@@ -2,7 +2,6 @@ import express from "express";
 import database from "../../database";
 import editSubscription from "../../operations/edit-subscription";
 import previewInvoice from "../../operations/preview-invoice";
-import retrieveSubscription from "../../operations/retrieve-subscription";
 
 const router = express.Router();
 
@@ -10,10 +9,13 @@ router.get("/:workspaceId/subscription", async (req, res, next) => {
   try {
     const id = Number.parseInt(req.params.workspaceId);
 
-    const workspace = await database.workspace.findUnique({ where: { id } });
-    if (!workspace) return res.sendStatus(404);
+    const workspace = await database.workspace.findUnique({
+      where: { id },
+      include: { subscription: true },
+    });
+    if (!workspace || !workspace.subscription) return res.sendStatus(404);
 
-    res.json(await retrieveSubscription(workspace));
+    res.json(workspace.subscription);
   } catch (error) {
     next(error);
   }
