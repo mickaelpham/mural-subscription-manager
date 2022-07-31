@@ -21,7 +21,7 @@ router.get("/:workspaceId/subscription", async (req, res, next) => {
 
 router.post("/:workspaceId/subscription", async (req, res, next) => {
   try {
-    const { plan, memberships, billingPeriod } = req.body;
+    const { plan, memberships, billingPeriod, promoCode } = req.body;
     const id = Number.parseInt(req.params.workspaceId);
 
     const workspace = await database.workspace.findUnique({ where: { id } });
@@ -31,6 +31,7 @@ router.post("/:workspaceId/subscription", async (req, res, next) => {
       plan,
       memberships,
       billingPeriod,
+      promoCode,
     });
 
     res.json(updatedSubscription);
@@ -41,7 +42,7 @@ router.post("/:workspaceId/subscription", async (req, res, next) => {
 
 router.post("/:workspaceId/subscription/preview", async (req, res, next) => {
   try {
-    const { plan, memberships, billingPeriod } = req.body;
+    const { plan, memberships, billingPeriod, promoCode } = req.body;
     const id = Number.parseInt(req.params.workspaceId);
 
     const workspace = await database.workspace.findUnique({ where: { id } });
@@ -51,6 +52,7 @@ router.post("/:workspaceId/subscription/preview", async (req, res, next) => {
       plan,
       memberships,
       billingPeriod,
+      promoCode,
     });
 
     res.json(updatedSubscription);

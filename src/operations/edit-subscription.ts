@@ -8,6 +8,16 @@ import Subscription, {
 
 const DAYS_UNTIL_DUE = 14; // days
 
+const retrievePromotion = async (
+  promoCode?: string
+): Promise<string | undefined> => {
+  if (promoCode) {
+    const promotions = await stripe.promotionCodes.list({ code: promoCode });
+
+    if (promotions.data[0]) return promotions.data[0].id;
+  }
+};
+
 const createSubscription = async (
   customer: string,
   subscription: EditSubscriptionParams
@@ -22,6 +32,7 @@ const createSubscription = async (
     ],
     collection_method: "send_invoice",
     days_until_due: DAYS_UNTIL_DUE,
+    promotion_code: await retrievePromotion(subscription.promoCode),
   });
 
   return buildSubscriptionFromStripe(stripeSubscription);
@@ -44,16 +55,17 @@ const updateSubscription = async (
         },
       ],
       proration_behavior: "always_invoice",
+      promotion_code: await retrievePromotion(subscription.promoCode),
     }
   );
 
   return buildSubscriptionFromStripe(updatedStripeSubscription);
 };
 
-export type EditSubscriptionParams = Pick<
-  Subscription,
-  "memberships" | "billingPeriod" | "plan"
->;
+export type EditSubscriptionParams =
+  | Pick<Subscription, "memberships" | "billingPeriod" | "plan"> & {
+      promoCode?: string;
+    };
 
 const editSubscription = async (
   workspace: Workspace,

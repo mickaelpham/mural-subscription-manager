@@ -1,12 +1,21 @@
 import { Workspace } from "@prisma/client";
 import Stripe from "stripe";
-import stripe, { dateToStripeTime } from "../stripe";
+import stripe, { dateToStripeTime, stripeTimeToDate } from "../stripe";
 import { retrievePrice } from "../types/subscription";
 import { EditSubscriptionParams } from "./edit-subscription";
 
 interface PreviewInvoiceResponse {
   amountDue: number;
   availableCredit: number;
+  discount?: {
+    coupon: {
+      name: string | null;
+      amountOff: number | null;
+      percentOff: number | null;
+    };
+    start: Date;
+    end?: Date;
+  };
 }
 
 const buildPreviewInvoiceResponse = (
@@ -21,8 +30,33 @@ const buildPreviewInvoiceResponse = (
 
   return {
     amountDue: amountDue / 100,
-    availableCredit: invoice.starting_balance,
+    availableCredit: invoice.starting_balance / 100,
+    discount: invoice.discount
+      ? {
+          coupon: {
+            name: invoice.discount.coupon.name,
+            amountOff: invoice.discount.coupon.amount_off
+              ? invoice.discount.coupon.amount_off / 100
+              : null,
+            percentOff: invoice.discount.coupon.percent_off,
+          },
+          start: stripeTimeToDate(invoice.discount.start),
+          end: invoice.discount.end
+            ? stripeTimeToDate(invoice.discount.end)
+            : undefined,
+        }
+      : undefined,
   };
+};
+
+const retrieveCoupon = async (
+  promoCode?: string
+): Promise<string | undefined> => {
+  if (promoCode) {
+    const promotions = await stripe.promotionCodes.list({ code: promoCode });
+
+    if (promotions.data[0]) return promotions.data[0].coupon.id;
+  }
 };
 
 const previewCreateSubscription = async (
@@ -37,6 +71,7 @@ const previewCreateSubscription = async (
         price: retrievePrice(subscription.plan, subscription.billingPeriod),
       },
     ],
+    coupon: await retrieveCoupon(subscription.promoCode),
   });
 
   return buildPreviewInvoiceResponse(upcomingInvoice);
@@ -66,6 +101,7 @@ const previewUpdateSubscription = async (
         price: retrievePrice(subscription.plan, subscription.billingPeriod),
       },
     ],
+    coupon: await retrieveCoupon(subscription.promoCode),
   });
 
   return buildPreviewInvoiceResponse(upcomingInvoice, prorationDate);
