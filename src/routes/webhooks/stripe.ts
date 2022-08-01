@@ -6,9 +6,7 @@ import stripe from "../../stripe";
 
 const router = express.Router();
 
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
-if (!endpointSecret)
-  throw new Error("missing STRIPE_ENDPOINT_SECRET environment variable");
+const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET || "not set";
 
 router.post("/stripe", async (req, res, next) => {
   const sig = req.headers["stripe-signature"];
